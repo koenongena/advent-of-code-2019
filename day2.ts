@@ -16,7 +16,7 @@ function determineOperation(operation: number) {
 }
 
 // part 1
-const handleOperation = (index: number, program: number[]) => {
+const handleOperation = (program: number[], index: number = 0) => {
     if (index > program.length) {
         return program;
     }
@@ -31,19 +31,27 @@ const handleOperation = (index: number, program: number[]) => {
     let indexResult = program[index + 3];
     program[indexResult] = operation(program[indexValue1], program[indexValue2]);
 
-    return handleOperation(index + 4, program);
+    return handleOperation(program, index + 4);
 };
 
-function twelveProgramAlertState(p) {
+function programAlarm(p, noun = 12, verb = 2) {
     const twelveO02 = [...p];
-    twelveO02[1] = 12;
-    twelveO02[2] = 2;
+    twelveO02[1] = noun;
+    twelveO02[2] = verb;
     return twelveO02;
 }
 
-const sample = handleOperation(0, [1, 0, 0, 0, 99]);
-console.log(sample);
-
-const result = handleOperation(0, twelveProgramAlertState(program));
+const result = handleOperation( programAlarm(program));
 
 console.log(result[0]);
+
+//part 2
+for (let noun = 0; noun < 100; noun++) {
+    for (let verb = 0; verb < 100; verb++) {
+        let result = handleOperation(programAlarm(program, noun, verb))[0];
+        if (result == 19690720) {
+            console.log(100 * noun + verb);
+        }
+    }
+}
+
