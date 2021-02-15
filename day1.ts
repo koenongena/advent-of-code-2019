@@ -1,3 +1,5 @@
+import * as R from "ramda";
+
 const masses = [
     109024,
     137172,
@@ -99,32 +101,22 @@ const masses = [
     140312,
     147746,
     136975];
-
-
 // part 1
+
+const calculateFuelMass = mass => Math.floor(mass / 3.0) - 2;
+
 const calculateFuel = (masses: number[]) => {
-    return masses.reduce((acc, mass) => {
-        return acc + (Math.floor(mass / 3.0) - 2);
-    }, 0);
+    return R.sum(R.map(calculateFuelMass, masses));
 };
 
 console.log(`Part 1: ${calculateFuel(masses)}`);
 
 // part 2
 const fuelForTheFuel = (startFuel: number) => {
-    let fuel = calculateFuel([startFuel]);
-    if (fuel <= 0) {
-        return [];
-    } else {
-        return [fuel, ...fuelForTheFuel(fuel)];
-    }
-
+    const fuel = calculateFuelMass(startFuel);
+    return fuel > 0 ? fuel + fuelForTheFuel(fuel) : 0;
 };
 
-const sum = (values: number[]) => values.reduce((sum, currentValue) => sum + currentValue, 0);
-
 //part 2
-let whatever = sum(
-    masses.map(fuel => sum(fuelForTheFuel(fuel)))
-);
-console.log(`Part 2: ${whatever}`);
+const result = R.sum(masses.map(fuelForTheFuel));
+console.log(`Part 2: ${result}`);
