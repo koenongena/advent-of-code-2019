@@ -44,7 +44,7 @@ const getFilePath = (day) => (url) => {
 
 const readContent = R.pipe(readFile, R.andThen(R.pipe(R.toString, R.trim)));
 
-export const readFileContent = (day) => {
+export const readFileContentForDay = (day) => {
     const determineFilePath = getFilePath(day);
 
     return R.pipe(
@@ -55,7 +55,7 @@ export const readFileContent = (day) => {
 }
 
 export const readLinesForDay = R.pipe(
-    readFileContent,
+    readFileContentForDay,
     R.andThen(R.split("\n"))
 );
 

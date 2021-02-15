@@ -1,3 +1,5 @@
-import * as R from 'ramda';
+import R = require("ramda");
 
-const permutations = R.xprod;
+export const pow = R.curry(R.flip(Math.pow));
+export const sqr = pow(2);
+export const sqrt = Math.sqrt;

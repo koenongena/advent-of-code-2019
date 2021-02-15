@@ -1,5 +1,5 @@
 import R = require("ramda");
-import {parseDecimal, readFileContent} from "./input";
+import {parseDecimal, readFileContentForDay} from "./input";
 
 const splitAndParse = R.pipe(R.split(','), R.map(R.trim), R.map(parseDecimal));
 
@@ -22,7 +22,7 @@ const programAlarm = (noun, verb) => R.pipe(R.update(1, noun), R.update(2, verb)
 const runProgram = (noun, verb, p) => R.pipe(programAlarm(noun, verb), handleOperation, R.head)(p);
 
 (async () => {
-    const program = await R.pipe(readFileContent, R.andThen(splitAndParse))(2)
+    const program = await R.pipe(readFileContentForDay, R.andThen(splitAndParse))(2)
 
     const result = runProgram(12, 2, program);
     console.log(result);
