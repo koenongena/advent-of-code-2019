@@ -34,7 +34,7 @@ const getFilePath = (day) => (url) => {
     if (fs.existsSync(filePath)) {
         console.log("Filepath " + filePath + " exists");
         return Promise.resolve(filePath);
-    } else {
+    } else if (!fs.existsSync('./input')) {
         fs.mkdirSync('./input');
     }
 
@@ -42,15 +42,21 @@ const getFilePath = (day) => (url) => {
     return downloadFile(url, filePath);
 };
 
-const splitLines = R.pipe(R.toString, R.trim, R.split('\n'));
-const readLines = R.pipe(readFile, R.andThen(splitLines));
+const readContent = R.pipe(readFile, R.andThen(R.pipe(R.toString, R.trim)));
 
-export const readLinesForDay = (day) => {
+export const readFileContent = (day) => {
     const determineFilePath = getFilePath(day);
 
     return R.pipe(
         getDownloadUrl,
         determineFilePath,
-        R.andThen(readLines)
+        R.andThen(readContent)
     )(day);
 }
+
+export const readLinesForDay = R.pipe(
+    readFileContent,
+    R.andThen(R.split("\n"))
+);
+
+export const parseDecimal = R.partialRight(parseInt, [10]);
