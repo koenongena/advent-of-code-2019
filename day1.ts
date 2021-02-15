@@ -17,7 +17,6 @@ const fuelForTheFuel = (startFuel: number) => {
 
 (async () => {
     const masses = await R.pipe(readLinesForDay, R.andThen(R.map(parseMass)))(1);
-
     console.log(`Part 1: ${calculateFuel(masses)}`);
 
     // part 2
