@@ -60,3 +60,5 @@ export const readLinesForDay = R.pipe(
 );
 
 export const parseDecimal = R.partialRight(parseInt, [10]);
+
+export const splitNumberList = (separator = ',') => R.pipe(R.split(separator), R.map(R.trim), R.map(parseDecimal))
