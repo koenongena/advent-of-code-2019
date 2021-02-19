@@ -1,56 +1,19 @@
 import R = require("ramda");
-import {readFileContentForDay, readLinesForDay} from "./input";
-import {KeyValuePair} from "ramda";
+import {readLinesForDay} from "./input";
+import {
+    appendChild,
+    containsNodeWithValue,
+    containsNodes,
+    getLeafs,
+    insertIntoTree,
+    isEmptyTree,
+    Node,
+    singletonTree,
+    Tree, ancestorsOf
+} from "./tree";
 
-type EmptyTree = { value: undefined, children: []; };
-type Node<T> = { value: T, children: Node<T>[]; }
-type Tree<T> = EmptyTree | Node<T>;
-type ParentChild = [string, string];
+export type ParentChild = [string, string];
 
-const createNode = <T>(value: T) => {
-    return {value: value, children: []} as Node<T>
-}
-const singletonTree = createNode;
-
-const isEmpty = <T>(tree: Tree<T>) => {
-    return tree.value == undefined;
-}
-
-const appendChild = (node: Tree<string>, child: string) => {
-    if (isEmpty(node)) {
-        return singletonTree(child);
-    }
-
-    const newNode = createNode(child);
-    return {
-        ...node,
-        children: R.append(newNode, node.children),
-    };
-};
-
-const insertIntoTree = R.curry(((tree: Tree<string>, pc: ParentChild) => {
-    const [parent, child] = pc;
-    if (tree.value == parent) {
-        return appendChild(tree, child);
-    }
-
-    return {
-        value: tree.value,
-        children: R.map(R.curry(insertIntoTree(R.__, pc)), tree.children)
-    }
-}));
-
-
-/**
- * Returns a list of nodes
- */
-const getLeafs: (tree: Tree<string>) => (Node<string>[]) = R.curry((tree: Tree<string>) => {
-    if (R.isEmpty(tree.children)) {
-        return tree;
-    }
-
-    return R.flatten(R.map(getLeafs, tree.children));
-});
 
 const findRoot = (pairs) => {
     const l = R.map(p => p[0], pairs);
@@ -59,11 +22,18 @@ const findRoot = (pairs) => {
     const nonMutual = R.head(R.difference(l, r));
     return R.find(p => p[0] === nonMutual, pairs);
 }
+// const appendPairs = (tree: Node<string>, remaining: ParentChild[]) => {
+//     const leafs = R.map(R.prop("value"), getLeafs(tree));
+//     const p = ([r, _]) => R.includes(r, leafs);
+//     const newLeafs = R.filter(p, remaining);
+//     return R.reduce(insertIntoTree, tree, newLeafs);
+// };
+
 
 const buildTree: (pairs) => Tree<string> = (pairs: ParentChild[]) => {
 
     const root = findRoot(pairs);
-    let remaining = R.filter(p => p[0] !== root[0],pairs);
+    let remaining = R.filter(p => p[0] !== root[0], pairs);
     let tree = appendChild(singletonTree(root[0]), root[1]);
 
     const isNotEmpty = R.complement(R.isEmpty);
@@ -78,6 +48,25 @@ const buildTree: (pairs) => Tree<string> = (pairs: ParentChild[]) => {
     return tree;
 };
 
+const nodesAtDepth = R.curry(<T>(depth: number, tree: Tree<T>) => {
+    if (isEmptyTree(tree)) {
+        return 0;
+    } else if (depth === 0 && containsNodes(tree)) {
+        return 1;
+    }
+    return R.sum(R.map(nodesAtDepth(depth - 1), tree.children));
+});
+
+const depth = <T>(tree: Tree<T>) => {
+    if (isEmptyTree(tree)) {
+        return 0;
+    } else if (R.isEmpty(tree.children)) {
+        return 1;
+    }
+
+    return 1 + R.apply(Math.max, R.map(depth, tree.children));
+}
+
 (async () => {
     const pairs = await R.pipe(
         readLinesForDay,
@@ -85,5 +74,18 @@ const buildTree: (pairs) => Tree<string> = (pairs: ParentChild[]) => {
     )(6);
 
     const tree = buildTree(pairs);
-    console.log(JSON.stringify(tree));
+    const orbitCountAtDepth = (d) => d * nodesAtDepth(d, tree);
+
+    const determineOrbitCount = R.pipe(
+        depth,
+        R.range(1),
+        R.map(orbitCountAtDepth),
+        R.sum
+    );
+    console.log(determineOrbitCount(tree));
+
+    const santaAncestors = ancestorsOf("SAN", tree);
+    const myAncestors = ancestorsOf("YOU", tree);
+    const mutualAncestors = R.intersection(santaAncestors, myAncestors);
+    console.log(santaAncestors.length - mutualAncestors.length + myAncestors.length - mutualAncestors.length)
 })();
